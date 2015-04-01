@@ -3,10 +3,10 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include "frame/window.h"
-#include "frame/shader.h"
-#include "frame/mesh.h"
-#include "frame/util.h"
+#include "glwrap/window.h"
+#include "glwrap/shader.h"
+#include "glwrap/mesh.h"
+#include "glwrap/util.h"
 
 #include <iostream>
 #include <string>
@@ -41,12 +41,12 @@ class window_triangle: public window
 			
 			std::cout << "Creating mesh... ";
 			{
-				mesh.draw_mode = GL_TRIANGLE_FAN;
+				mesh.draw_mode = GL_TRIANGLES;
 				mesh.storage_policy = GL_STATIC_DRAW;
 				
 				unsigned pos = mesh.add_stream();
 				unsigned color = mesh.add_stream();
-				unsigned indices = mesh.add_stream();
+				unsigned ind = mesh.add_stream();
 				
 				mesh[pos].type = GL_FLOAT;
 				mesh[pos].buffer_type = GL_ARRAY_BUFFER;
@@ -73,6 +73,20 @@ class window_triangle: public window
 					0.0f << 1.0f << 0.0f << 
 					0.0f << 0.0f << 1.0f << 
 					1.0f << 1.0f << 1.0f;
+					
+				//
+				
+				mesh[ind].type = GL_UNSIGNED_INT;
+				mesh[ind].buffer_type = GL_ELEMENT_ARRAY_BUFFER;
+				mesh[ind].components = 1;
+				mesh[ind].normalized = 0;
+				mesh[ind].name = "";
+				
+				mesh[ind].data << 
+					0u << 1u << 2u <<
+					0u << 3u << 2u;
+					
+				//
 					
 				mesh.upload();
 			}
