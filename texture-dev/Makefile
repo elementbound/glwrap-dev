@@ -6,6 +6,7 @@ build:
 	g++ -c -std=c++11 -I../ ../glwrap/mesh/basic_mesh.cpp -o bin/basic_mesh.o
 	g++ -c -std=c++11 -I../ ../glwrap/mesh/separated_mesh.cpp -o bin/separated_mesh.o
 	g++ -c -std=c++11 -I../ texture2d.cpp -o bin/texture2d.o
+	g++ -c -std=c++11 -I../ texture_util.cpp -o bin/texture_util.o
 	g++ -c -std=c++11 -I../ texturedev.cpp -o bin/texturedev.o
-	g++ bin/*.o -lglfw3 -lgdi32 -lopengl32 -lglew32 -o texturedev
+	g++ bin/*.o -lglfw3 -lgdi32 -lopengl32 -lglew32 -lpng -lz -o texturedev
 	copy /Y ..\glew32.dll .\glew32.dll

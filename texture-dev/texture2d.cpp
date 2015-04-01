@@ -18,3 +18,9 @@ void texture2d::upload(void* data, unsigned w, unsigned h, GLint internal_format
 void texture2d::parameter(GLenum param, int value) { glTexParameteri(GL_TEXTURE_2D, param, value); }
 void texture2d::parameter(GLenum param, float value) { glTexParameterf(GL_TEXTURE_2D, param, value); }
 void texture2d::use() const { glBindTexture(GL_TEXTURE_2D, m_Texture); }
+
+void texture2d::free() 
+{
+	glDeleteTextures(1, &m_Texture);
+	m_Texture = 0;
+}

@@ -28,6 +28,8 @@ class texture2d
 		void parameter(GLenum param, int value);
 		void parameter(GLenum param, float value);
 		void use() const;
+		
+		void free();
 };
 
 #endif
