@@ -4,9 +4,11 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include "glwrap/window.h"
+#include "glwrap/resizable_window.h"
 #include "glwrap/shader.h"
 #include "glwrap/mesh.h"
 #include "glwrap/util.h"
+#include "texture2d.h"
 
 #include <iostream>
 #include <string>
@@ -16,12 +18,14 @@ void error_callback(int error, const char* error_str)
 	std::cerr << "[" << error << "]" << error_str << std::endl;
 }
 
-class window_texture: public window
+class window_texture: public resizable_window
 {
 	private:
 		shader_program program;
 		separated_mesh mesh;
-		GLuint texture;
+		texture2d texture;
+		
+		glm::mat4 matOrtho;
 		
 	protected: 
 		void on_open()
@@ -55,10 +59,10 @@ class window_texture: public window
 				mesh[pos].name = "vertexPosition";
 				
 				mesh[pos].data <<
-					0.0f << 0.0f <<
-					1.0f << 0.0f << 
-					1.0f << 1.0f << 
-					0.0f << 1.0f;
+					-1.0f << -1.0f <<
+					 1.0f << -1.0f << 
+					 1.0f <<  1.0f << 
+					-1.0f <<  1.0f;
 					
 				//
 				
@@ -80,7 +84,6 @@ class window_texture: public window
 			
 			std::cout << "Creating textures... ";
 			{
-				glGenTextures(1, &texture);
 				float tex_rgb[] = {
 					0.5f, 0.5f, 0.5f, 
 					1.0f, 1.0f, 1.0f, 
@@ -88,15 +91,16 @@ class window_texture: public window
 					0.5f, 0.5f, 0.5f
 				};
 				
-				glBindTexture(GL_TEXTURE_2D, texture);
-				glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 2,2,0, GL_RGB, GL_FLOAT, tex_rgb);
+				texture.upload(tex_rgb, 2,2, GL_RGB, GL_RGB, GL_FLOAT);
+				texture.use();
 				
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+				texture.parameter(GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+				texture.parameter(GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 				
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+				texture.parameter(GL_TEXTURE_WRAP_S, GL_REPEAT);
+				texture.parameter(GL_TEXTURE_WRAP_T, GL_REPEAT);
 			}
+			std::cout << "Done" << std::endl;
 			
 			//Shaders
 			std::cout << "Compiling shaders... ";
@@ -124,6 +128,12 @@ class window_texture: public window
 			std::cout << "Ready to use" << std::endl;
 		}
 		
+		void on_resize(int w, int h)
+		{
+			resizable_window::on_resize(w,h);
+			matOrtho = glm::ortho(-m_WindowAspect, m_WindowAspect, -1.0, 1.0);
+		}
+		
 		void on_refresh()
 		{
 			static float f = 0.0;
@@ -132,8 +142,7 @@ class window_texture: public window
 			
 			glClear(GL_COLOR_BUFFER_BIT);
 			
-			static glm::mat4 matView(1.0);
-			program.set_uniform("uMVP", matView);
+			program.set_uniform("uMVP", matOrtho);
 			mesh.draw();
 			
 			glfwSwapBuffers(this->handle());
