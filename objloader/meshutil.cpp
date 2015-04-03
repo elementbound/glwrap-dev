@@ -68,7 +68,7 @@ namespace meshutil
 		
 		result_mesh[pos].type = GL_FLOAT;
 		result_mesh[pos].buffer_type = GL_ARRAY_BUFFER;
-		result_mesh[pos].components = 2;
+		result_mesh[pos].components = 3;
 		result_mesh[pos].normalized = 0;
 		result_mesh[pos].name = "vertexPosition";
 		
@@ -152,13 +152,13 @@ namespace meshutil
 		
 		for(const auto& f: vertex_combinations)
 		{
-			const index_t& pos_index = f[0];
-			const index_t& uv_index = f[1];
-			const index_t& normal_index = f[2];
+			const index_t pos_index = f[0] - 1;
+			const index_t uv_index = f[1] - 1;
+			const index_t normal_index = f[2] - 1;
 			
-			result_mesh[pos].data << obj_positions[pos_index-1];
-			result_mesh[tex].data << obj_texcoords[uv_index-1];
-			result_mesh[nor].data << obj_normals[normal_index-1];
+			result_mesh[pos].data << obj_positions[pos_index];
+			result_mesh[tex].data << obj_texcoords[uv_index];
+			result_mesh[nor].data << obj_normals[normal_index];
 		}
 		
 		for(const auto& f: obj_vertices)

@@ -45,8 +45,13 @@ class window_objloader: public resizable_window
 				return; 
 			}
 			
+			//GL init
+			glEnable(GL_DEPTH_TEST);
+			
+			//Asset init
 			std::cout << "Loading mesh... ";
 			meshutil::load_obj("data/cube.obj", mesh);
+			mesh.draw_mode = GL_TRIANGLES;
 			std::cout << "Done" << std::endl;
 			
 			//Shaders
@@ -90,7 +95,7 @@ class window_objloader: public resizable_window
 			static float f = 0.0;
 			f = fmod(glfwGetTime()/8.0f, 1.0f);
 			
-			glClear(GL_COLOR_BUFFER_BIT);
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 			
 			float angle = f * 2.0 * 3.14159265;
 			pitch = glm::radians(45.0f + std::sin(f*2.0f*glm::two_pi<float>())*11.25f);
