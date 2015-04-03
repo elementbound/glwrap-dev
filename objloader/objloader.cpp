@@ -8,6 +8,8 @@
 #include "glwrap/shader.h"
 #include "glwrap/mesh.h"
 #include "glwrap/util.h"
+#include "glwrap/texture2d.h"
+#include "glwrap/texture_util.h"
 
 #include "meshutil.h"
 
@@ -24,6 +26,7 @@ class window_objloader: public resizable_window
 	private:
 		shader_program program;
 		separated_mesh mesh;
+		texture2d texture;
 		
 		glm::mat4 matView;
 		glm::mat4 matProjection;
@@ -50,9 +53,20 @@ class window_objloader: public resizable_window
 			
 			//Asset init
 			std::cout << "Loading mesh... ";
-			meshutil::load_obj("data/cube.obj", mesh);
+			meshutil::load_obj("data/suzanne.obj", mesh);
 			mesh.draw_mode = GL_TRIANGLES;
 			std::cout << "Done" << std::endl;
+			
+			std::cout << "Loading texture... ";
+				texture = texutil::load_png("data/texture.png");
+				texture.parameter(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+				texture.parameter(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+				
+				texture.parameter(GL_TEXTURE_WRAP_S, GL_REPEAT);
+				texture.parameter(GL_TEXTURE_WRAP_T, GL_REPEAT);
+				
+				texture.use();
+			std::cout << "Done\n";
 			
 			//Shaders
 			std::cout << "Compiling shaders... ";
@@ -88,7 +102,7 @@ class window_objloader: public resizable_window
 		
 		void on_refresh()
 		{
-			static float r = 2.0f;
+			static float r = 4.0f;
 			static float pitch = glm::radians(45.0f);
 			static glm::vec3 camera_at;
 			

@@ -80,7 +80,7 @@ namespace meshutil
 		
 		result_mesh[tex].type = GL_FLOAT;
 		result_mesh[tex].buffer_type = GL_ARRAY_BUFFER;
-		result_mesh[tex].components = 3;
+		result_mesh[tex].components = 2;
 		result_mesh[tex].normalized = 0;
 		result_mesh[tex].name = "vertexTexcoord";
 		
