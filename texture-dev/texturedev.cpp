@@ -8,8 +8,8 @@
 #include "glwrap/shader.h"
 #include "glwrap/mesh.h"
 #include "glwrap/util.h"
-#include "texture2d.h"
-#include "texture_util.h"
+#include "glwrap/texture2d.h"
+#include "glwrap/texture_util.h"
 
 #include <iostream>
 #include <string>
