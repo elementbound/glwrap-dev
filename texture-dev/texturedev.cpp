@@ -85,15 +85,6 @@ class window_texture: public resizable_window
 			
 			std::cout << "Creating textures... ";
 			{
-				/*float tex_rgb[] = {
-					0.5f, 0.5f, 0.5f, 
-					1.0f, 1.0f, 1.0f, 
-					1.0f, 1.0f, 1.0f,
-					0.5f, 0.5f, 0.5f
-				};
-				
-				texture.upload(tex_rgb, 2,2, GL_RGB, GL_RGB, GL_FLOAT);*/
-				
 				texture = texutil::load_png("data/texture.png");
 				texture.use();
 				
