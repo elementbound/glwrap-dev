@@ -8,8 +8,8 @@
 #include "glwrap/shader.h"
 #include "glwrap/mesh.h"
 #include "glwrap/util.h"
-#include "glwrap/texture2d.h"
-#include "glwrap/texture_util.h"
+#include "texture.h"
+#include "texture_util.h"
 
 #include <iostream>
 #include <string>
@@ -83,16 +83,20 @@ class window_texture: public resizable_window
 			}
 			std::cout << "Done" << std::endl;
 			
+			//Textures
 			std::cout << "Creating textures... ";
 			{
-				texture = texutil::load_png("data/texture.png");
+				image img = texutil::load_png("data/texture.png");
+				texture.upload(img, GL_RGBA);
 				texture.use();
 				
-				texture.parameter(GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-				texture.parameter(GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+				texture.parameter(GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+				texture.parameter(GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 				
 				texture.parameter(GL_TEXTURE_WRAP_S, GL_REPEAT);
 				texture.parameter(GL_TEXTURE_WRAP_T, GL_REPEAT);
+				
+				texture.generate_mipmaps();
 			}
 			std::cout << "Done" << std::endl;
 			
