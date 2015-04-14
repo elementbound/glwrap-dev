@@ -7,6 +7,7 @@
 #include "glwrap/resizable_window.h"
 #include "glwrap/shader.h"
 #include "glwrap/mesh.h"
+#include "glwrap/meshutil.h"
 #include "glwrap/util.h"
 #include "texture.h"
 #include "texture_util.h"
@@ -24,9 +25,10 @@ class window_texture: public resizable_window
 	private:
 		shader_program program;
 		separated_mesh mesh;
-		texture2d texture;
+		texture_cube tex_skybox;
 		
-		glm::mat4 matOrtho;
+		glm::mat4 matView;
+		glm::mat4 matProjection;
 		
 	protected: 
 		void on_open()
@@ -47,55 +49,31 @@ class window_texture: public resizable_window
 			
 			std::cout << "Creating mesh... ";
 			{
-				mesh.draw_mode = GL_TRIANGLE_FAN;
+				meshutil::load_obj("data/cube.obj", mesh);
+				//mesh.draw_mode = GL_TRIANGLES;
 				mesh.storage_policy = GL_STATIC_DRAW;
-				
-				unsigned pos = mesh.add_stream();
-				unsigned uvs = mesh.add_stream();
-				
-				mesh[pos].type = GL_FLOAT;
-				mesh[pos].buffer_type = GL_ARRAY_BUFFER;
-				mesh[pos].components = 2;
-				mesh[pos].normalized = 0;
-				mesh[pos].name = "vertexPosition";
-				
-				mesh[pos].data <<
-					-1.0f << -1.0f <<
-					 1.0f << -1.0f << 
-					 1.0f <<  1.0f << 
-					-1.0f <<  1.0f;
-					
-				//
-				
-				mesh[uvs].type = GL_FLOAT;
-				mesh[uvs].buffer_type = GL_ARRAY_BUFFER;
-				mesh[uvs].components = 2;
-				mesh[uvs].normalized = 0;
-				mesh[uvs].name = "vertexTexcoord";
-				
-				mesh[uvs].data <<
-					0.0f << 0.0f <<
-					1.0f << 0.0f << 
-					1.0f << 1.0f << 
-					0.0f << 1.0f;
-				
 				mesh.upload();
 			}
 			std::cout << "Done" << std::endl;
 			
+			glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+			
 			//Textures
 			std::cout << "Creating textures... ";
 			{
-				texture.upload(texutil::load_png("data/texture.png"), GL_RGBA);
-				texture.use();
+				tex_skybox.upload(GL_TEXTURE_CUBE_MAP_POSITIVE_X, texutil::load_png("data/skybox/alps_lf.png"), GL_RGB);
+				tex_skybox.upload(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, texutil::load_png("data/skybox/alps_rt.png"), GL_RGB);
+				tex_skybox.upload(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, texutil::load_png("data/skybox/alps_bk.png"), GL_RGB);
+				tex_skybox.upload(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, texutil::load_png("data/skybox/alps_ft.png"), GL_RGB);
+				tex_skybox.upload(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, texutil::load_png("data/skybox/alps_dn.png"), GL_RGB);
+				tex_skybox.upload(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, texutil::load_png("data/skybox/alps_up.png"), GL_RGB);
 				
-				texture.parameter(GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-				texture.parameter(GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+				tex_skybox.parameter(GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+				tex_skybox.parameter(GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 				
-				texture.parameter(GL_TEXTURE_WRAP_S, GL_REPEAT);
-				texture.parameter(GL_TEXTURE_WRAP_T, GL_REPEAT);
+				tex_skybox.generate_mipmaps();
 				
-				texture.generate_mipmaps();
+				tex_skybox.use();
 			}
 			std::cout << "Done" << std::endl;
 			
@@ -103,13 +81,13 @@ class window_texture: public resizable_window
 			std::cout << "Compiling shaders... ";
 			program.create();
 			
-			if(!program.attach(read_file("data/textured.vs").c_str(), shader_program::shader_type::vertex))
+			if(!program.attach(read_file("data/skybox.vs").c_str(), shader_program::shader_type::vertex))
 			{
 				std::cerr << "Couldn't attach vertex shader" << std::endl;
 				return;
 			}
 			
-			if(!program.attach(read_file("data/textured.fs").c_str(), shader_program::shader_type::fragment))
+			if(!program.attach(read_file("data/skybox.fs").c_str(), shader_program::shader_type::fragment))
 			{
 				std::cerr << "Couldn't attach fragment shader" << std::endl;
 				return;
@@ -123,23 +101,40 @@ class window_texture: public resizable_window
 			mesh.bind();
 			
 			std::cout << "Ready to use" << std::endl;
+			
+			//
+			
+			{
+				int w, h;
+				glfwGetWindowSize(this->handle(), &w, &h);
+				this->on_resize(w,h);
+			}
 		}
 		
 		void on_resize(int w, int h)
 		{
 			resizable_window::on_resize(w,h);
-			matOrtho = glm::ortho(-m_WindowAspect, m_WindowAspect, -1.0, 1.0);
+			matProjection = glm::perspective(glm::radians(80.0f), (float)m_WindowAspect, 0.5f, 16.0f);
 		}
 		
 		void on_refresh()
 		{
+			static float r = 4.0f;
+			static float pitch = glm::radians(45.0f);
+			static glm::vec3 camera_at;
+			
 			static float f = 0.0;
-			f += 1.0/256.0;
-			if(f >= 1.0) f -= 2.0f;
+			f = fmod(glfwGetTime()/30.0f, 1.0f);
 			
-			glClear(GL_COLOR_BUFFER_BIT);
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 			
-			program.set_uniform("uMVP", matOrtho);
+			float angle = f * 2.0 * 3.14159265;
+			pitch = glm::radians(std::sin(f*2.0f*glm::two_pi<float>())*60.0f);
+			camera_at = r * dirvec(angle, pitch);
+			
+			matView = glm::lookAt(glm::vec3(0.0f), camera_at, glm::vec3(0.0f,0.0f,1.0f));
+			
+			program.set_uniform("uMVP", matProjection * matView);
 			mesh.draw();
 			
 			glfwSwapBuffers(this->handle());
@@ -162,7 +157,7 @@ int main()
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	
-	wnd.open(512,512, "it's a tRIANGLE");
+	wnd.open(512,512, "demSKY");
 	if(!wnd)
 		return 3;
 	
