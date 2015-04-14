@@ -55,8 +55,10 @@ class texture_cube
 	private: 
 		GLuint	m_Texture = 0;
 		image	m_Images[6];
+		GLint 	m_InternalFormat;
 		
 		void create_texture();
+		void upload_internal(GLint gl_face, unsigned int_face);
 		
 	public: 
 		bool is_valid() const;
@@ -67,6 +69,7 @@ class texture_cube
 		void upload(GLenum face, const image& img, GLint internal_format);
 		void parameter(GLenum param, int value);
 		void parameter(GLenum param, float value);
+		void generate_mipmaps();
 		void use() const;
 		
 		void free();
