@@ -10,8 +10,8 @@ build:
 	g++ ${CXX_FLAGS} -c ../glwrap/mesh/basic_mesh.cpp -o bin/basic_mesh.o
 	g++ ${CXX_FLAGS} -c ../glwrap/mesh/separated_mesh.cpp -o bin/separated_mesh.o
 	g++ ${CXX_FLAGS} -c ../glwrap/meshutil.cpp -o bin/meshutil.o
-	g++ ${CXX_FLAGS} -c texture.cpp -o bin/texture.o
-	g++ ${CXX_FLAGS} -c texture_util.cpp -o bin/texture_util.o
+	g++ ${CXX_FLAGS} -c ../glwrap/texture.cpp -o bin/texture.o
+	g++ ${CXX_FLAGS} -c ../glwrap/texture_util.cpp -o bin/texture_util.o
 	g++ ${CXX_FLAGS} -c texturedev.cpp -o bin/texturedev.o
 	g++ ${CXX_FLAGS} -c cubemap.cpp -o bin/cubemap.o
 	g++ bin/texturedev.o ${COMMON_DEPS} ${LINKER_SETTINGS} -o texturedev

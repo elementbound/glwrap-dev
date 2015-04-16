@@ -9,8 +9,8 @@
 #include "glwrap/mesh.h"
 #include "glwrap/meshutil.h"
 #include "glwrap/util.h"
-#include "texture.h"
-#include "texture_util.h"
+#include "glwrap/texture.h"
+#include "glwrap/texture_util.h"
 
 #include <iostream>
 #include <string>
