@@ -12,8 +12,8 @@
 
 class app_FboDev : public resizable_window {
 	private:
-		shader				m_TexturedShader;
-		shader 				m_PostprocessShader;
+		shader_program		m_TexturedShader;
+		shader_program		m_PostprocessShader;
 
 		separated_mesh 		m_CubeMesh;
 		separated_mesh 		m_ScreenPlaneMesh;

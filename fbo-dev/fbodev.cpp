@@ -60,7 +60,12 @@ bool app_FboDev::load_resources()
 	std::vector<const char*> file_list = 
 	{
 		"data/textured.vs",
-		"data/textured.fs"
+		"data/textured.fs",
+
+		"data/post.vs",
+		"data/post.fs",
+
+		"data/cube.obj"
 	};
 	
 	bool fail = false;
@@ -132,8 +137,32 @@ bool app_FboDev::load_resources()
 			0.0f << 1.0f;
 
 		m_ScreenPlaneMesh.upload();
+
+		m_PostprocessShader.use();
+		m_ScreenPlaneMesh.bind();
 	}
 	std::cout << "done\n";
+
+	//
+
+	std::cout << "Creating FBO... \n";
+		std::cout << "\tCreating texture... ";
+			glGenTextures(1, &m_TextureHandle);
+			glBindTexture(GL_TEXTURE_2D, m_TextureHandle);
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m_FBOSize.x, m_FBOSize.y, 0, GL_UNSIGNED_BYTE, NULL);
+		std::cout << "done!\n";
+
+		std::cout << "\tCreating RBO... ";
+			glGenRenderBuffers(1, &m_RBOHandle);
+			glBindRenderBuffer(GL_RENDERBUFFER, m_RBOHandle);
+			glRenderBufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, m_FBOSize.x, m_FBOSize.y);
+		std::cout << "done\n";
+
+		glGenFramebuffers(1, &m_FBOHandle);
+		glBindFramebuffer(GL_FRAMEBUFFER, m_FBOHandle);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE2D, m_TextureHandle, 0);
+		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_RBOHandle);
+	std::cout << "Done!\n";
 
 	return 1;
 }
@@ -158,8 +187,7 @@ void app_FboDev::on_fbresize(int w, int h)
 	w += (w==0);
 	h += (h==0);
 	
-	m_Projection = glm::perspective(m_CameraFov, float(w)/h, 1e-2f, 1024.0f);
-	m_Viewport = glm::vec4(0.0f, 0.0f, (float)m_FramebufferWidth, (float)m_FramebufferHeight);
+	m_WindowProjection = glm::ortho(0.0f, (float)m_FramebufferWidth, 0.0f, (float)m_FramebufferHeight);
 }
 
 void app_FboDev::on_key(int key, int scancode, int action, int mods)
@@ -172,34 +200,6 @@ void app_FboDev::on_refresh()
 {
 	//Draw
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	
-	m_CameraAt = dirvec(m_CameraRot.y, m_CameraRot.x) * m_CameraDst;
-	m_View = glm::lookAt(m_CameraAt, glm::vec3(0.0f,0.0f,0.0f), glm::vec3(0.0f,0.0f,1.0f));
-
-	if(m_DrawMode & 0x1) {
-		glEnable(GL_DEPTH_TEST);
-			m_TexturedShader.use();
-			m_TexturedShader.set_uniform("uModelView", m_View); 
-			m_TexturedShader.set_uniform("uProjection", m_Projection); 
-			m_TexturedShader.set_uniform("uLightDir", glm::vec3(0.707f, 0.707f, 0.0f)); 
-			m_Mesh.draw();
-	}
-
-	if(m_DrawMode & 0x2) {
-		glDisable(GL_DEPTH_TEST);
-			m_WireShader.use();
-			m_WireShader.set_uniform("uMVP", m_Projection * m_View); 
-			m_WireShader.set_uniform("uColor", glm::vec4(0,0,0, 0.125f));
-			m_Wireframe.draw();
-	}
-
-	if(m_DrawMode & 0x4) {
-		glEnable(GL_DEPTH_TEST);
-			m_WireShader.use();
-			m_WireShader.set_uniform("uMVP", m_Projection * m_View); 
-			m_WireShader.set_uniform("uColor", glm::vec4(0,0,0, 0.5f));
-			m_Wireframe.draw();
-	}
 	
 	glfwSwapBuffers(this->handle());
 }
