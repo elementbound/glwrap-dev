@@ -111,6 +111,15 @@ bool app_FboDev::load_resources()
 
 	std::cout << "Loading texture... ";
 		m_Texture.upload(texutil::load_png("data/texture.png"), GL_RGBA);
+		m_Texture.use();
+				
+		m_Texture.parameter(GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+		m_Texture.parameter(GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+		
+		m_Texture.parameter(GL_TEXTURE_WRAP_S, GL_REPEAT);
+		m_Texture.parameter(GL_TEXTURE_WRAP_T, GL_REPEAT);
+		
+		m_Texture.generate_mipmaps();
 	std::cout << "done\n";
 
 	//
@@ -245,7 +254,6 @@ void app_FboDev::on_refresh()
 	m_TexturedShader.use();
 	m_Texture.use();
 	m_TexturedShader.set_uniform("uMVP", m_FBOProjection * m_FBOView);
-	m_CubeMesh.bind();
 	m_CubeMesh.draw();
 	
 	glfwSwapBuffers(this->handle());
