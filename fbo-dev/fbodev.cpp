@@ -179,6 +179,8 @@ bool app_FboDev::load_resources()
 		std::cout << "\tCreating texture... ";
 			glGenTextures(1, &m_TextureHandle);
 			glBindTexture(GL_TEXTURE_2D, m_TextureHandle);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
 			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m_FBOSize.x, m_FBOSize.y, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
 		std::cout << "done!\n";
 
