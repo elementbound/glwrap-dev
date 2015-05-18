@@ -5,6 +5,7 @@
 #include <glm/gtc/constants.hpp>
 
 #include "fbodev.h"
+#include "glwrap/meshutil.h"
 
 #include <iostream>
 #include <string>
@@ -58,11 +59,8 @@ bool app_FboDev::load_resources()
 {
 	std::vector<const char*> file_list = 
 	{
-		"data/diffuse.vs",
-		"data/diffuse.fs",
-
-		"data/wireframe.vs",
-		"data/wireframe.fs"
+		"data/textured.vs",
+		"data/textured.fs"
 	};
 	
 	bool fail = false;
@@ -76,19 +74,67 @@ bool app_FboDev::load_resources()
 	if(fail) 
 		return 0;
 	
-	std::cout << "Compiling diffuse shader... ";
-		m_DiffuseShader.create();
+	std::cout << "Compiling texture shader... ";
+		m_TexturedShader.create();
 		
-		if(!m_DiffuseShader.attach(read_file("data/diffuse.vs").c_str(), shader_program::shader_type::vertex))
+		if(!m_TexturedShader.attach(read_file("data/textured.vs").c_str(), shader_program::shader_type::vertex))
 			dieret("\nCouldn't attach vertex shader", 0);
 		
-		if(!m_DiffuseShader.attach(read_file("data/diffuse.fs").c_str(), shader_program::shader_type::fragment))
+		if(!m_TexturedShader.attach(read_file("data/textured.fs").c_str(), shader_program::shader_type::fragment))
 			dieret("\nCouldn't attach fragment shader", 0);
 		
-		glBindFragDataLocation(m_DiffuseShader.handle(), 0, "outColor");
-		m_DiffuseShader.link();
+		glBindFragDataLocation(m_TexturedShader.handle(), 0, "outColor");
+		m_TexturedShader.link();
 	std::cout << "done\n";
+
+	//
+
+	std::cout << "Loading cube mesh... ";
+		load_obj("data/cube.obj", m_CubeMesh);
+
+		m_TexturedShader.use();
+		m_CubeMesh.bind();
+	std::cout << "done\n"
 	
+	std::cout << "Creating screen plane mesh... ";
+	{
+		unsigned pos = m_ScreenPlaneMesh.add_stream();
+		unsigned tex = m_ScreenPlaneMesh.add_stream();
+
+		m_ScreenPlaneMesh[pos].type = GL_FLOAT;
+		m_ScreenPlaneMesh[pos].buffer_type = GL_ARRAY_BUFFER;
+		m_ScreenPlaneMesh[pos].components = 2;
+		m_ScreenPlaneMesh[pos].normalized = 0;
+		m_ScreenPlaneMesh[pos].name = "vertexPosition";
+
+		m_ScreenPlaneMesh[pos].data << 
+			-1.0f << -1.0f <<
+			 1.0f << -1.0f << 
+			 1.0f <<  1.0f << 
+
+			-1.0f << -1.0f << 
+			 1.0f <<  1.0f << 
+			-1.0f <<  1.0f;
+
+		m_ScreenPlaneMesh[tex].type = GL_FLOAT;
+		m_ScreenPlaneMesh[tex].buffer_type = GL_ARRAY_BUFFER;
+		m_ScreenPlaneMesh[tex].components = 2;
+		m_ScreenPlaneMesh[tex].normalized = 0;
+		m_ScreenPlaneMesh[tex].name = "vertexTexcoord";
+
+		m_ScreenPlaneMesh[tex].data << 
+			0.0f << 0.0f <<
+			1.0f << 0.0f << 
+			1.0f << 1.0f << 
+
+			0.0f << 0.0f << 
+			1.0f << 1.0f << 
+			0.0f << 1.0f;
+
+		m_ScreenPlaneMesh.upload();
+	}
+	std::cout << "done\n";
+
 	return 1;
 }
 
@@ -132,10 +178,10 @@ void app_FboDev::on_refresh()
 
 	if(m_DrawMode & 0x1) {
 		glEnable(GL_DEPTH_TEST);
-			m_DiffuseShader.use();
-			m_DiffuseShader.set_uniform("uModelView", m_View); 
-			m_DiffuseShader.set_uniform("uProjection", m_Projection); 
-			m_DiffuseShader.set_uniform("uLightDir", glm::vec3(0.707f, 0.707f, 0.0f)); 
+			m_TexturedShader.use();
+			m_TexturedShader.set_uniform("uModelView", m_View); 
+			m_TexturedShader.set_uniform("uProjection", m_Projection); 
+			m_TexturedShader.set_uniform("uLightDir", glm::vec3(0.707f, 0.707f, 0.0f)); 
 			m_Mesh.draw();
 	}
 
