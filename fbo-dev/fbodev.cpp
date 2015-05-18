@@ -5,10 +5,13 @@
 #include <glm/gtc/constants.hpp>
 
 #include "fbodev.h"
+#include "glwrap/util.h" //read_file
 #include "glwrap/meshutil.h"
 
 #include <iostream>
+#include <fstream>
 #include <string>
+#include <cstdlib> //exit
 
 //===========================================================================================//
 //Window implementation
@@ -51,8 +54,6 @@ void app_FboDev::init_window()
 
 	glEnable(GL_DEPTH_TEST);
 	glDisable(GL_CULL_FACE);
-	
-	m_View = glm::mat4(1.0f);
 }
 
 bool app_FboDev::load_resources()
@@ -95,11 +96,11 @@ bool app_FboDev::load_resources()
 	//
 
 	std::cout << "Loading cube mesh... ";
-		load_obj("data/cube.obj", m_CubeMesh);
+		meshutil::load_obj("data/cube.obj", m_CubeMesh);
 
 		m_TexturedShader.use();
 		m_CubeMesh.bind();
-	std::cout << "done\n"
+	std::cout << "done\n";
 	
 	std::cout << "Creating screen plane mesh... ";
 	{
@@ -149,18 +150,18 @@ bool app_FboDev::load_resources()
 		std::cout << "\tCreating texture... ";
 			glGenTextures(1, &m_TextureHandle);
 			glBindTexture(GL_TEXTURE_2D, m_TextureHandle);
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m_FBOSize.x, m_FBOSize.y, 0, GL_UNSIGNED_BYTE, NULL);
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m_FBOSize.x, m_FBOSize.y, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
 		std::cout << "done!\n";
 
 		std::cout << "\tCreating RBO... ";
-			glGenRenderBuffers(1, &m_RBOHandle);
-			glBindRenderBuffer(GL_RENDERBUFFER, m_RBOHandle);
-			glRenderBufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, m_FBOSize.x, m_FBOSize.y);
+			glGenRenderbuffers(1, &m_RBOHandle);
+			glBindRenderbuffer(GL_RENDERBUFFER, m_RBOHandle);
+			glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, m_FBOSize.x, m_FBOSize.y);
 		std::cout << "done\n";
 
 		glGenFramebuffers(1, &m_FBOHandle);
 		glBindFramebuffer(GL_FRAMEBUFFER, m_FBOHandle);
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE2D, m_TextureHandle, 0);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_TextureHandle, 0);
 		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_RBOHandle);
 	std::cout << "Done!\n";
 
