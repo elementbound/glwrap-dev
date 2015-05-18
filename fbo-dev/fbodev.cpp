@@ -194,9 +194,6 @@ bool app_FboDev::load_resources()
 		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_RBOHandle);
 	std::cout << "Done!\n";
 
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	glBindRenderbuffer(GL_RENDERBUFFER, 0);
-
 	return 1;
 }
 
@@ -231,8 +228,10 @@ void app_FboDev::on_key(int key, int scancode, int action, int mods)
 
 void app_FboDev::on_refresh()
 {
-	//Draw
+	//Draw FBO
+	glBindFramebuffer(GL_FRAMEBUFFER, m_FBOHandle);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glEnable(GL_DEPTH_TEST);
 
 	static float dst = 2.0f;
 	static float period = 8.0f;
@@ -255,6 +254,15 @@ void app_FboDev::on_refresh()
 	m_Texture.use();
 	m_TexturedShader.set_uniform("uMVP", m_FBOProjection * m_FBOView);
 	m_CubeMesh.draw();
+
+	//Draw postprocess
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glDisable(GL_DEPTH_TEST);
+	glClear(GL_COLOR_BUFFER_BIT);
+	m_PostprocessShader.use();
+	glBindTexture(GL_TEXTURE_2D, m_TextureHandle);
+	m_PostprocessShader.set_uniform("uMVP", glm::mat4(1.0f));
+	m_ScreenPlaneMesh.draw();
 	
 	glfwSwapBuffers(this->handle());
 }
