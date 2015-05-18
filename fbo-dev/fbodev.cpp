@@ -7,6 +7,7 @@
 #include "fbodev.h"
 #include "glwrap/util.h" //read_file
 #include "glwrap/meshutil.h"
+#include "glwrap/texture_util.h"
 
 #include <iostream>
 #include <fstream>
@@ -48,12 +49,11 @@ void app_FboDev::init_window()
 	glfwSetInputMode(this->handle(), GLFW_STICKY_MOUSE_BUTTONS, GL_TRUE);
 	
 	//GL init
-	glClearColor(1.0, 1.0, 1.0, 1.0);
+	glClearColor(0.0, 0.0, 0.0, 1.0);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	glEnable(GL_DEPTH_TEST);
-	glDisable(GL_CULL_FACE);
 }
 
 bool app_FboDev::load_resources()
@@ -66,7 +66,8 @@ bool app_FboDev::load_resources()
 		"data/post.vs",
 		"data/post.fs",
 
-		"data/cube.obj"
+		"data/cube.obj",
+		"data/texture.png"
 	};
 	
 	bool fail = false;
@@ -91,6 +92,25 @@ bool app_FboDev::load_resources()
 		
 		glBindFragDataLocation(m_TexturedShader.handle(), 0, "outColor");
 		m_TexturedShader.link();
+	std::cout << "done\n";
+
+	std::cout << "Compiling postprocess shader... ";
+		m_PostprocessShader.create();
+		
+		if(!m_PostprocessShader.attach(read_file("data/post.vs").c_str(), shader_program::shader_type::vertex))
+			dieret("\nCouldn't attach vertex shader", 0);
+		
+		if(!m_PostprocessShader.attach(read_file("data/post.fs").c_str(), shader_program::shader_type::fragment))
+			dieret("\nCouldn't attach fragment shader", 0);
+		
+		glBindFragDataLocation(m_PostprocessShader.handle(), 0, "outColor");
+		m_PostprocessShader.link();
+	std::cout << "done\n";
+
+	//
+
+	std::cout << "Loading texture... ";
+		m_Texture.upload(texutil::load_png("data/texture.png"), GL_RGBA);
 	std::cout << "done\n";
 
 	//
@@ -165,6 +185,9 @@ bool app_FboDev::load_resources()
 		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_RBOHandle);
 	std::cout << "Done!\n";
 
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glBindRenderbuffer(GL_RENDERBUFFER, 0);
+
 	return 1;
 }
 
@@ -201,6 +224,29 @@ void app_FboDev::on_refresh()
 {
 	//Draw
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	static float dst = 2.0f;
+	static float period = 8.0f;
+
+	static float f;
+	static float yaw, pitch;
+
+	static glm::vec3 cameraAt;
+		f = fmod(glfwGetTime(), period) / period;
+
+		yaw = f * glm::two_pi<float>();
+		pitch = glm::radians(30.0f); 
+
+		cameraAt = dirvec(yaw, pitch) * dst;
+
+	m_FBOView = glm::lookAt(cameraAt, glm::vec3(0.0f), glm::vec3(0,0,1));
+	m_FBOProjection = glm::perspective(glm::radians(60.0f), float(m_FBOSize.y) / m_FBOSize.x, 0.125f, 4.0f*dst);
+
+	m_TexturedShader.use();
+	m_Texture.use();
+	m_TexturedShader.set_uniform("uMVP", m_FBOProjection * m_FBOView);
+	m_CubeMesh.bind();
+	m_CubeMesh.draw();
 	
 	glfwSwapBuffers(this->handle());
 }

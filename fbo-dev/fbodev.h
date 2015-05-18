@@ -9,6 +9,7 @@
 #include "glwrap/resizable_window.h"
 #include "glwrap/shader.h"
 #include "glwrap/mesh.h"
+#include "glwrap/texture.h"
 
 class app_FboDev : public resizable_window {
 	private:
@@ -17,6 +18,8 @@ class app_FboDev : public resizable_window {
 
 		separated_mesh 		m_CubeMesh;
 		separated_mesh 		m_ScreenPlaneMesh;
+
+		texture2d			m_Texture;
 
 		//
 
