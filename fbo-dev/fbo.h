@@ -1,5 +1,5 @@
-#ifndef _H_FBODEV_H_
-#define _H_FBODEV_H_
+#ifndef _H_FBO_H_
+#define _H_FBO_H_
 
 #include <GL/glew.h>
 #include <set>
@@ -20,6 +20,7 @@ class fbo {
 		GLenum 	check_status() const;
 
 		void 	bind(GLenum type = GL_FRAMEBUFFER);
+		void	unbind();
 
 		void	attach_texture(GLenum attachment_point, GLenum texture_type, GLuint texture, GLint texture_level, bool own = 1);
 		void 	attach_rbo(GLenum attachment_point, GLuint rbo, bool own = 1);

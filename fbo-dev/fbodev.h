@@ -10,6 +10,7 @@
 #include "glwrap/shader.h"
 #include "glwrap/mesh.h"
 #include "glwrap/texture.h"
+#include "fbo.h"
 
 class app_FboDev : public resizable_window {
 	private:
@@ -23,7 +24,7 @@ class app_FboDev : public resizable_window {
 
 		//
 
-		GLuint				m_FBOHandle;
+		fbo					m_FBO;
 		GLuint				m_TextureHandle;
 		GLuint				m_RBOHandle;
 

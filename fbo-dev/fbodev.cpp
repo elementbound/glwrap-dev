@@ -190,10 +190,9 @@ bool app_FboDev::load_resources()
 			glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, m_FBOSize.x, m_FBOSize.y);
 		std::cout << "done\n";
 
-		glGenFramebuffers(1, &m_FBOHandle);
-		glBindFramebuffer(GL_FRAMEBUFFER, m_FBOHandle);
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_TextureHandle, 0);
-		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_RBOHandle);
+		m_FBO.bind(GL_FRAMEBUFFER);
+		m_FBO.attach_texture(GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_TextureHandle, 0, 1);
+		m_FBO.attach_rbo(GL_DEPTH_ATTACHMENT, m_RBOHandle, 1);
 	std::cout << "Done!\n";
 
 	return 1;
@@ -231,7 +230,8 @@ void app_FboDev::on_key(int key, int scancode, int action, int mods)
 void app_FboDev::on_refresh()
 {
 	//Draw FBO
-	glBindFramebuffer(GL_FRAMEBUFFER, m_FBOHandle);
+	//glBindFramebuffer(GL_FRAMEBUFFER, m_FBOHandle);
+	m_FBO.bind(GL_FRAMEBUFFER);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glEnable(GL_DEPTH_TEST);
 
@@ -258,7 +258,8 @@ void app_FboDev::on_refresh()
 	m_CubeMesh.draw();
 
 	//Draw postprocess
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	//glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	m_FBO.unbind();
 	glDisable(GL_DEPTH_TEST);
 	glClear(GL_COLOR_BUFFER_BIT);
 	m_PostprocessShader.use();

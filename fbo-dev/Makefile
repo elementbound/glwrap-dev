@@ -1,8 +1,9 @@
 CXX_FLAGS = -std=c++11 -I../
-GLWRAP_BINS = bin/window.o bin/resizable_window.o bin/basic_mesh.o bin/separated_mesh.o bin/shader.o bin/texture.o bin/meshutil.o bin/texture_util.o bin/util.o
+GLWRAP_BINS = bin/window.o bin/resizable_window.o bin/basic_mesh.o bin/separated_mesh.o bin/shader.o bin/texture.o bin/meshutil.o bin/texture_util.o bin/util.o bin/fbo.o
 LINKER_SETTINGS = -lglfw3 -lgdi32 -lopengl32 -lglew32 -lcomdlg32 -lpng -lz
 
 build: 
+	g++ ${CXX_FLAGS} -c fbo.cpp -o bin/fbo.o
 	g++ ${CXX_FLAGS} -c fbodev.cpp -o bin/fbodev.o
 
 	g++ ${GLWRAP_BINS} bin/fbodev.o ${LINKER_SETTINGS} -o fbodev

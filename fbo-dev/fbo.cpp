@@ -10,7 +10,7 @@ bool fbo::is_valid() const {
 
 //!!!CHANGES GL STATE!!!
 GLenum fbo::check_status() const {
-	glBindFramebuffer(GL_FRAMEBUFFER);
+	glBindFramebuffer(GL_FRAMEBUFFER, m_Handle);
 	return glCheckFramebufferStatus(GL_FRAMEBUFFER);
 }
 
@@ -22,6 +22,10 @@ void fbo::bind(GLenum type) {
 	glBindFramebuffer(type, m_Handle);
 }
 
+void fbo::unbind() {
+	glBindFramebuffer(m_BindType, 0);
+}
+
 //TODO: extend 3D and cube map support
 void fbo::attach_texture(GLenum attachment_point, GLenum texture_type, GLuint texture, GLint texture_level, bool own) {
 	bind(m_BindType);
@@ -31,11 +35,11 @@ void fbo::attach_texture(GLenum attachment_point, GLenum texture_type, GLuint te
 	switch(texture_type) {
 		case GL_TEXTURE_1D: glFramebufferTexture1D(m_BindType, attachment_point, texture_type, texture, 0); break;
 		case GL_TEXTURE_2D: glFramebufferTexture2D(m_BindType, attachment_point, texture_type, texture, 0); break;
-		case GL_TEXTURE_3D: glFramebufferTexture1D(m_BindType, attachment_point, texture_type, texture, , 0); break;
+		case GL_TEXTURE_3D: glFramebufferTexture3D(m_BindType, attachment_point, texture_type, texture, 0, 0); break;
 		default: attach_success = 0;
 	}
 
-	if(attach_succes && own) 
+	if(attach_success && own) 
 		m_Attachments.insert({texture_type, texture});
 }
 
