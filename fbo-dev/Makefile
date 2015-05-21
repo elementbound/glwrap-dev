@@ -3,7 +3,6 @@ GLWRAP_BINS = bin/window.o bin/resizable_window.o bin/basic_mesh.o bin/separated
 LINKER_SETTINGS = -lglfw3 -lgdi32 -lopengl32 -lglew32 -lcomdlg32 -lpng -lz
 
 build: 
-	g++ ${CXX_FLAGS} -c fbo.cpp -o bin/fbo.o
 	g++ ${CXX_FLAGS} -c fbodev.cpp -o bin/fbodev.o
 
 	g++ ${GLWRAP_BINS} bin/fbodev.o ${LINKER_SETTINGS} -o fbodev
@@ -19,3 +18,4 @@ glwrap:
 	g++ ${CXX_FLAGS} -c ../glwrap/mesh/separated_mesh.cpp -o bin/separated_mesh.o
 	g++ ${CXX_FLAGS} -c ../glwrap/shader.cpp -o bin/shader.o
 	g++ ${CXX_FLAGS} -c ../glwrap/texture.cpp -o bin/texture.o
+	g++ ${CXX_FLAGS} -c ../glwrap/fbo.cpp -o bin/fbo.o

@@ -10,7 +10,7 @@
 #include "glwrap/shader.h"
 #include "glwrap/mesh.h"
 #include "glwrap/texture.h"
-#include "fbo.h"
+#include "glwrap/fbo.h"
 
 class app_FboDev : public resizable_window {
 	private:
